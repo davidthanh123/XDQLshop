@@ -1,0 +1,178 @@
+@model List<DonHang>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>In Vận Đơn Hàng Loạt (@Model.Count đơn)</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        body { background: #e9ecef; font-family: "Segoe UI", Arial, sans-serif; color: #111; }
+        .action-bar { background: #212529; color: #fff; padding: 12px 20px; position: sticky; top: 0; z-index: 1000; }
+        .waybill-wrapper { max-width: 680px; margin: 20px auto; background: #fff; padding: 24px; border: 2px solid #222; border-radius: 6px; page-break-after: always; }
+        .waybill-header { border-bottom: 2px solid #222; padding-bottom: 12px; margin-bottom: 12px; }
+        .waybill-section { border: 1px solid #444; border-radius: 4px; padding: 10px; margin-bottom: 12px; }
+        .barcode-box { text-align: center; margin: 6px 0; }
+        .cod-box { background: #fdf2e9; border: 2px dashed #d9534f; padding: 10px; border-radius: 4px; text-align: center; }
+        .cod-amount { font-size: 1.4rem; font-weight: 800; color: #d9534f; }
+        .table-items th, .table-items td { padding: 6px 8px; font-size: 0.88rem; }
+        .sign-box { min-height: 60px; }
+
+        @@media print {
+            body { background: #fff !important; }
+            .action-bar { display: none !important; }
+            .waybill-wrapper { border: 1.5px solid #000; box-shadow: none; padding: 10px; max-width: 100% !important; margin: 0 !important; page-break-after: always; }
+            .cod-box { background: #fff !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="action-bar no-print d-flex justify-content-between align-items-center">
+    <div>
+        <strong><i class="bi bi-printer-fill me-1"></i> In Vận Đơn Hàng Loạt</strong>
+        <span class="badge bg-info text-dark ms-2">Đang chọn @Model.Count đơn hàng</span>
+        <span class="badge bg-warning text-dark ms-1">Tính năng CR-01 (Yêu cầu thay đổi Tuần 2)</span>
+    </div>
+    <div>
+        <button onclick="window.print()" class="btn btn-success btn-sm me-2">
+            <i class="bi bi-printer me-1"></i> In Toàn Bộ (@Model.Count Phiếu) / Lưu PDF
+        </button>
+        <a href="@Url.Action("Index", "DonHang")" class="btn btn-outline-light btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Quay lại danh sách đơn
+        </a>
+    </div>
+</div>
+
+@foreach (var don in Model)
+{
+    var barcodeMaDon = ShopQuanLy.Services.BarcodeHelper.GenerateSvg(don.MaDon, 42, 2);
+    var barcodeVanDon = ShopQuanLy.Services.BarcodeHelper.GenerateSvg(don.MaVanDon ?? don.MaDon, 42, 2);
+
+    <div class="waybill-wrapper">
+        <!-- Header -->
+        <div class="waybill-header d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="mb-0 fw-bold">SHOP THỜI TRANG ONLINE</h4>
+                <div class="small text-muted">Hotline: 0988.123.456 &bull; Kho: Kho Hàng Tổng, Cầu Giấy, Hà Nội</div>
+            </div>
+            <div class="text-end">
+                <span class="badge bg-dark fs-6 px-3 py-2">Kênh: @don.Kenh</span>
+                <div class="small mt-1 text-muted">Ngày: @don.NgayTao.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+        </div>
+
+        <!-- Barcode & Tracking -->
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <div class="waybill-section text-center h-100">
+                    <div class="small fw-bold text-uppercase text-muted">Mã Đơn Hàng: @don.MaDon</div>
+                    <div class="barcode-box">
+                        @Html.Raw(barcodeMaDon)
+                    </div>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="waybill-section text-center h-100">
+                    <div class="small fw-bold text-uppercase text-muted">Mã Vận Đơn: @don.MaVanDon</div>
+                    <div class="barcode-box">
+                        @Html.Raw(barcodeVanDon)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Receiver info -->
+        <div class="waybill-section">
+            <div class="row">
+                <div class="col-8">
+                    <div class="small text-muted text-uppercase fw-bold">Người Nhận (Khách Hàng):</div>
+                    <div class="fs-5 fw-bold text-dark">@don.KhachHang.HoTen</div>
+                    <div><i class="bi bi-telephone-fill me-1 text-secondary"></i> <strong>@don.KhachHang.SoDienThoai</strong></div>
+                    <div><i class="bi bi-geo-alt-fill me-1 text-secondary"></i> @don.KhachHang.DiaChi</div>
+                </div>
+                <div class="col-4 border-start ps-3">
+                    <div class="small text-muted text-uppercase fw-bold">Vận Chuyển:</div>
+                    <div class="fw-bold text-primary">@don.DonViVanChuyen</div>
+                    <div class="small text-muted mt-2">Trạng thái: <b>@don.TrangThai</b></div>
+                    <div class="small text-muted">Người tạo: @don.NguoiTao</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products list -->
+        <div class="mb-2">
+            <div class="small fw-bold text-uppercase mb-1">Nội Dung Hàng Hóa (@don.ChiTiet.Sum(c => c.SoLuong) sản phẩm):</div>
+            <table class="table table-bordered table-items mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 28%">Mã SKU</th>
+                        <th>Tên Sản Phẩm / Biến Thể</th>
+                        <th class="text-center" style="width: 10%">SL</th>
+                        <th class="text-end" style="width: 18%">Đơn Giá</th>
+                        <th class="text-end" style="width: 18%">Thành Tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in don.ChiTiet)
+                    {
+                        <tr>
+                            <td class="font-monospace fw-bold">@c.BienThe.MaSku</td>
+                            <td>
+                                @c.BienThe.SanPham.TenSp
+                                <span class="badge bg-light text-dark border ms-1">@c.BienThe.Size / @c.BienThe.MauSac</span>
+                            </td>
+                            <td class="text-center fw-bold">@c.SoLuong</td>
+                            <td class="text-end">@c.DonGia.ToString("N0") đ</td>
+                            <td class="text-end fw-bold">@((c.SoLuong * c.DonGia).ToString("N0")) đ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Financials & COD -->
+        <div class="row g-2 mb-2">
+            <div class="col-7">
+                <div class="waybill-section h-100">
+                    <div class="small fw-bold text-uppercase text-muted">Ghi Chú Giao Hàng:</div>
+                    <div class="fw-bold text-danger mt-1">@don.GhiChu</div>
+                    <div class="small text-muted mt-2">Chỉ dẫn: Cho khách đồng kiểm hàng, không thử đồ.</div>
+                </div>
+            </div>
+            <div class="col-5">
+                <div class="cod-box h-100 d-flex flex-column justify-content-center">
+                    <div class="small fw-bold text-uppercase text-muted">Tiền Thu Hộ (COD):</div>
+                    <div class="cod-amount">@don.TienThuHo.ToString("N0") VNĐ</div>
+                    <div class="small text-muted">(Tổng giá trị đơn hàng)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="row text-center mt-3 pt-2 border-top">
+            <div class="col-4">
+                <div class="small fw-bold text-uppercase">Người Đóng Gói</div>
+                <div class="sign-box"></div>
+                <div class="small text-muted">(@(don.NguoiTao ?? "Kho"))</div>
+            </div>
+            <div class="col-4">
+                <div class="small fw-bold text-uppercase">NV Giao Hàng</div>
+                <div class="sign-box"></div>
+                <div class="small text-muted">(Ký xác nhận)</div>
+            </div>
+            <div class="col-4">
+                <div class="small fw-bold text-uppercase">Khách Nhận</div>
+                <div class="sign-box"></div>
+                <div class="small text-muted">(Ký xác nhận)</div>
+            </div>
+        </div>
+    </div>
+}
+
+</body>
+</html>

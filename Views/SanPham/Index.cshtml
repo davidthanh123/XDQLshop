@@ -1,0 +1,93 @@
+@model List<SanPham>
+@{
+    ViewData["Title"] = "Quản lý Sản phẩm";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold"><i class="bi bi-tags me-2"></i>Danh Mục Sản Phẩm & Biến Thể</h3>
+        <small class="text-muted">Quản lý các dòng sản phẩm thời trang, giá bán, giá vốn và các phân loại biến thể</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="Create">
+            <i class="bi bi-plus-lg me-1"></i> Thêm sản phẩm mới
+        </a>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="row g-2 mb-3">
+    <div class="col-md-6">
+        <div class="card p-3 kpi-card">
+            <div class="small text-muted fw-bold">Tổng Số Dòng Sản Phẩm (Model)</div>
+            <div class="fs-4 fw-bold text-primary">@ViewBag.TongSanPham dòng sản phẩm</div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card p-3 kpi-card kpi-success">
+            <div class="small text-muted fw-bold">Tổng Số Mã SKU Biến Thể Phân Loại</div>
+            <div class="fs-4 fw-bold text-success">@ViewBag.TongSku mã SKU (>800 SKU theo quy mô shop)</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search -->
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-9">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input name="q" value="@ViewBag.Q" class="form-control" placeholder="Tìm theo mã sản phẩm hoặc tên sản phẩm..." />
+            </div>
+        </div>
+        <div class="col-md-3 d-flex gap-1">
+            <button class="btn btn-secondary w-100"><i class="bi bi-filter"></i> Tìm kiếm</button>
+            <a asp-action="Index" class="btn btn-outline-secondary" title="Đặt lại"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Product Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 12%">Mã SP</th>
+                    <th style="width: 28%">Tên Sản Phẩm Thời Trang</th>
+                    <th class="text-end" style="width: 14%">Giá Bán</th>
+                    <th class="text-end" style="width: 14%">Giá Vốn</th>
+                    <th>Các Mã Biến Thể SKU (Size / Màu : Tồn Kho)</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td class="font-monospace fw-bold text-primary">@s.MaSp</td>
+                        <td>
+                            <div class="fw-bold">@s.TenSp</div>
+                            <small class="text-muted">Tổng @s.BienThes.Count biến thể</small>
+                        </td>
+                        <td class="text-end fw-bold text-danger">@s.GiaBan.ToString("N0") đ</td>
+                        <td class="text-end text-muted">@s.GiaVon.ToString("N0") đ</td>
+                        <td>
+                            <div class="d-flex flex-wrap gap-1" style="max-height: 85px; overflow-y: auto;">
+                                @foreach (var b in s.BienThes.OrderBy(x => x.MaSku))
+                                {
+                                    string badgeClass = b.TonKho == 0 ? "bg-danger" : (b.TonKho <= b.NguongCanhBao ? "bg-warning text-dark" : "bg-light text-dark border");
+                                    <span class="badge @badgeClass font-monospace small" title="@b.Ten">
+                                        @b.MaSku: <strong>@b.TonKho</strong>
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted small">
+        Hiển thị <strong>@Model.Count</strong> dòng sản phẩm.
+    </div>
+</div>

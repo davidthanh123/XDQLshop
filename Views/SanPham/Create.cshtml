@@ -1,0 +1,58 @@
+@model SanPham
+@{
+    ViewData["Title"] = "Thêm Sản Phẩm Mới";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <div>
+                    <h3 class="fw-bold mb-0 text-primary"><i class="bi bi-tag me-2"></i>Thêm Mới Sản Phẩm Thời Trang</h3>
+                    <small class="text-muted">Khai báo thông tin sản phẩm và tự động sinh các biến thể SKU theo Size & Màu</small>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+            </div>
+
+            <div asp-validation-summary="All" class="alert alert-danger" style="display:none"></div>
+
+            <form method="post">
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Mã sản phẩm (Mã SP) <span class="text-danger">*</span></label>
+                        <input asp-for="MaSp" class="form-control text-uppercase font-monospace fw-bold" placeholder="Ví dụ: AT05" required />
+                    </div>
+                    <div class="col-md-8">
+                        <label class="form-label fw-bold">Tên sản phẩm thời trang <span class="text-danger">*</span></label>
+                        <input asp-for="TenSp" class="form-control" placeholder="Ví dụ: Áo thun tay lỡ form rộng phối túi" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Giá bán niêm yết (VNĐ) <span class="text-danger">*</span></label>
+                        <input asp-for="GiaBan" class="form-control fw-bold" placeholder="Ví dụ: 199000" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Giá vốn nhập hàng (VNĐ)</label>
+                        <input asp-for="GiaVon" class="form-control" placeholder="Ví dụ: 110000" />
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">
+                        Khai báo danh sách biến thể (Size, Màu sắc, Số lượng ban đầu):
+                    </label>
+                    <div class="small text-muted mb-2">
+                        Nhập mỗi biến thể trên một dòng theo định dạng chuẩn: <code>Size,Màu,SốLượng</code> (Hệ thống sẽ tự động ghép thành mã SKU chuẩn, ví dụ: <code>AT05-S-DEN</code>).
+                    </div>
+                    <textarea name="bienThe" rows="6" class="form-control font-monospace" placeholder="S,DEN,25&#10;M,DEN,30&#10;L,DEN,20&#10;S,TRANG,20&#10;M,TRANG,25&#10;L,TRANG,15"></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a class="btn btn-secondary" asp-action="Index">Hủy bỏ</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold">
+                        <i class="bi bi-check2-circle me-1"></i> Lưu Sản Phẩm & Biến Thể
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

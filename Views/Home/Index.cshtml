@@ -1,0 +1,181 @@
+@{
+    ViewData["Title"] = "Trang Chủ";
+}
+
+<div class="p-4 mb-4 bg-white rounded-3 shadow-sm border">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2 class="fw-bold text-dark mb-1">
+                <i class="bi bi-shop text-primary me-2"></i>Chào mừng trở lại, @User.Identity?.Name!
+            </h2>
+            <p class="text-muted mb-0">
+                Hệ thống Quản lý Đơn hàng (OMS) & Tồn kho (WMS) cho Shop Thời Trang Online Đa Kênh (TikTok Shop, Facebook, Zalo).
+            </p>
+        </div>
+        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+            <a class="btn btn-primary" asp-controller="DonHang" asp-action="Index">
+                <i class="bi bi-receipt me-1"></i> Quản lý đơn hàng
+            </a>
+            <a class="btn btn-outline-info" asp-controller="DuAn" asp-action="Index">
+                <i class="bi bi-kanban me-1"></i> Hồ sơ dự án
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Functional Modules -->
+<div class="row g-3 mb-4">
+    <!-- Module 1: Don Hang -->
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-3">
+                    <i class="bi bi-receipt fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Xử Lý Đơn Hàng</h5>
+                    <small class="text-muted">Quy mô ~120 đơn/ngày</small>
+                </div>
+            </div>
+            <p class="small text-muted mb-3">
+                Tạo đơn có trừ kho ngay trong transaction, chống bán lố, theo dõi vòng đời đơn và tự động hoàn kho khi hủy đơn.
+            </p>
+            <div class="mt-auto d-flex gap-2">
+                <a class="btn btn-sm btn-primary w-100" asp-controller="DonHang" asp-action="Index">Danh sách đơn</a>
+                @if (User.IsInRole(VaiTro.ChuShop) || User.IsInRole(VaiTro.ChotDon))
+                {
+                    <a class="btn btn-sm btn-outline-primary" asp-controller="DonHang" asp-action="Create" title="Tạo đơn"><i class="bi bi-plus-lg"></i></a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 2: Import CSV -->
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-success bg-opacity-10 text-success p-3 rounded-circle me-3">
+                    <i class="bi bi-file-earmark-spreadsheet fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Nhập Đơn Hàng Loạt</h5>
+                    <small class="text-muted">TikTok Shop & Facebook</small>
+                </div>
+            </div>
+            <p class="small text-muted mb-3">
+                Nhập file CSV xuất từ các sàn, tự động validate mã SKU, trừ kho tức thời và phản hồi lỗi chi tiết từng dòng.
+            </p>
+            <div class="mt-auto">
+                <a class="btn btn-sm btn-success w-100" asp-controller="DonHang" asp-action="ImportCsv">
+                    <i class="bi bi-upload me-1"></i> Nhập file CSV đơn hàng
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 3: In Van Don (CR-01) -->
+    <div class="col-md-4">
+        <div class="card h-100 p-3 border-warning">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-warning bg-opacity-25 text-dark p-3 rounded-circle me-3">
+                    <i class="bi bi-printer-fill fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">In Vận Đơn (CR-01)</h5>
+                    <span class="badge bg-warning text-dark">Yêu cầu thay đổi Tuần 2</span>
+                </div>
+            </div>
+            <p class="small text-muted mb-3">
+                Xuất phiếu giao hàng dạng PDF / In ấn chuẩn khổ A5/A6 có SVG barcode tự động, hỗ trợ in đơn lẻ hoặc in hàng loạt.
+            </p>
+            <div class="mt-auto">
+                <a class="btn btn-sm btn-warning text-dark fw-bold w-100" asp-controller="DonHang" asp-action="Index">
+                    <i class="bi bi-printer me-1"></i> Chọn đơn để in vận đơn
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 4: Ton Kho -->
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-info bg-opacity-10 text-info p-3 rounded-circle me-3">
+                    <i class="bi bi-boxes fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Quản Lý Tồn Kho</h5>
+                    <small class="text-muted">>800 mã hàng theo size/màu</small>
+                </div>
+            </div>
+            <p class="small text-muted mb-3">
+                Nhập kho hàng mới, kiểm kê định kỳ cân bằng tồn thực tế, lưu vết lịch sử biến động kho (Audit Trail).
+            </p>
+            <div class="mt-auto d-flex gap-2">
+                <a class="btn btn-sm btn-info text-dark w-100" asp-controller="TonKho" asp-action="Index">Xem tồn kho</a>
+                <a class="btn btn-sm btn-outline-secondary" asp-controller="TonKho" asp-action="LichSu">Lịch sử</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 5: Bao Cao & Chot Ca -->
+    <div class="col-md-4">
+        <div class="card h-100 p-3">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-danger bg-opacity-10 text-danger p-3 rounded-circle me-3">
+                    <i class="bi bi-graph-up-arrow fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Báo Cáo & Chốt Ca</h5>
+                    <small class="text-muted">Chốt doanh thu &lt; 15 phút</small>
+                </div>
+            </div>
+            <p class="small text-muted mb-3">
+                Doanh thu theo ngày/kênh bán, top 10 sản phẩm bán chạy, cảnh báo hàng sắp hết và xuất biên bản chốt ca PDF trong 1 click.
+            </p>
+            <div class="mt-auto">
+                <a class="btn btn-sm btn-danger w-100" asp-controller="BaoCao" asp-action="Index">
+                    <i class="bi bi-pie-chart-fill me-1"></i> Xem báo cáo & chốt ca
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 6: Ho So QLDA -->
+    <div class="col-md-4">
+        <div class="card h-100 p-3 border-primary">
+            <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle me-3">
+                    <i class="bi bi-kanban fs-3"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0">Hồ Sơ QLDA CNTT</h5>
+                    <small class="text-muted">15+1 ngày &bull; 55M (CR 3.1M)</small>
+                </div>
+            </div>
+            <p class="small text-muted mb-3">
+                Hồ sơ kiểm soát dự án: Mục tiêu SMART, WBS tiến độ, quản lý chi phí dự phòng và phiếu yêu cầu thay đổi (CR-01).
+            </p>
+            <div class="mt-auto">
+                <a class="btn btn-sm btn-outline-primary w-100" asp-controller="DuAn" asp-action="Index">
+                    <i class="bi bi-file-earmark-text me-1"></i> Xem hồ sơ kiểm soát
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fast Account Switcher for Demo -->
+<div class="card p-3 bg-light">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <strong class="text-dark"><i class="bi bi-people-fill me-1"></i> Kiểm thử phân quyền 3 tác nhân:</strong>
+            <span class="text-muted small ms-2">Đăng nhập tài khoản khác để trải nghiệm đúng quyền hạn nghiệp vụ:</span>
+        </div>
+        <div class="d-flex gap-2">
+            <a class="btn btn-sm btn-outline-danger" asp-controller="Account" asp-action="Login">
+                <i class="bi bi-person-fill me-1"></i> Đổi tài khoản
+            </a>
+        </div>
+    </div>
+</div>

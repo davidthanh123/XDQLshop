@@ -1,0 +1,67 @@
+@{
+    ViewData["Title"] = "Đăng nhập hệ thống";
+}
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-5 col-lg-4">
+        <div class="card p-4 shadow-sm border-0">
+            <div class="text-center mb-4">
+                <div class="bg-primary bg-opacity-10 text-primary p-3 rounded-circle d-inline-block mb-2">
+                    <i class="bi bi-shield-lock-fill fs-2"></i>
+                </div>
+                <h4 class="fw-bold mb-0">ĐĂNG NHẬP</h4>
+                <div class="small text-muted">Shop Thời Trang Online - OMS & WMS</div>
+            </div>
+
+            @if (ViewBag.Loi != null)
+            {
+                <div class="alert alert-danger py-2 small">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i> @ViewBag.Loi
+                </div>
+            }
+
+            <form method="post" id="loginForm">
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Tên đăng nhập</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-person"></i></span>
+                        <input name="tenDangNhap" id="txtUser" class="form-control" placeholder="chushop, chotdon, kho" required />
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold small">Mật khẩu</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-key"></i></span>
+                        <input name="matKhau" id="txtPass" type="password" class="form-control" placeholder="123456" required />
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 fw-bold py-2 mb-3">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Đăng nhập
+                </button>
+            </form>
+
+            <div class="border-top pt-3 text-center">
+                <div class="small fw-bold text-muted mb-2">Đăng nhập nhanh theo vai trò (Mật khẩu: 123456):</div>
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="quickLogin('chushop', '123456')">
+                        <i class="bi bi-person-badge me-1"></i> Chủ Shop (Toàn quyền, Báo cáo)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="quickLogin('chotdon', '123456')">
+                        <i class="bi bi-cart-check me-1"></i> Nhân Viên Chốt Đơn (Tạo đơn, CSV)
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-warning text-dark" onclick="quickLogin('kho', '123456')">
+                        <i class="bi bi-box-seam me-1"></i> Nhân Viên Kho (Tồn kho, Vận đơn)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function quickLogin(u, p) {
+        document.getElementById('txtUser').value = u;
+        document.getElementById('txtPass').value = p;
+        document.getElementById('loginForm').submit();
+    }
+</script>

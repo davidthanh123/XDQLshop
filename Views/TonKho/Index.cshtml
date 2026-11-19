@@ -1,0 +1,155 @@
+@model List<BienThe>
+@{
+    ViewData["Title"] = "Quản lý Tồn kho";
+    bool sapHet = ViewBag.SapHet == true;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold"><i class="bi bi-boxes me-2"></i>Quản Lý Tồn Kho & SKU Biến Thể</h3>
+        <small class="text-muted">Theo dõi thời gian thực hơn 800 mã hàng theo Size & Màu sắc, cảnh báo hết hàng tự động</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-primary" asp-action="Nhap">
+            <i class="bi bi-box-arrow-in-down me-1"></i> Nhập kho
+        </a>
+        <a class="btn btn-warning text-dark" asp-action="KiemKe">
+            <i class="bi bi-clipboard-check me-1"></i> Kiểm kê
+        </a>
+        <a class="btn btn-outline-secondary" asp-action="LichSu">
+            <i class="bi bi-clock-history me-1"></i> Lịch sử kho
+        </a>
+        <a class="btn btn-outline-success" asp-action="ExportCsv">
+            <i class="bi bi-file-earmark-arrow-down me-1"></i> Xuất CSV
+        </a>
+    </div>
+</div>
+
+<!-- KPI Cards -->
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card">
+            <div class="small text-muted text-uppercase fw-bold">Tổng Số Mã SKU Biến Thể</div>
+            <div class="fs-3 fw-bold text-primary">@ViewBag.TongSku</div>
+            <div class="small text-muted">Quy mô >800 SKU theo bài toán</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card kpi-warning">
+            <div class="small text-muted text-uppercase fw-bold">SKU Sắp Hết Hàng (&le; Ngưỡng)</div>
+            <div class="fs-3 fw-bold text-warning">@ViewBag.DemSapHet</div>
+            <div class="small text-muted">Cần nhập bổ sung gấp</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card kpi-danger">
+            <div class="small text-muted text-uppercase fw-bold">SKU Đã Hết Hàng (Tồn = 0)</div>
+            <div class="fs-3 fw-bold text-danger">@ViewBag.DemHetHang</div>
+            <div class="small text-muted">Hệ thống chặn bán tuyệt đối</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card kpi-success">
+            <div class="small text-muted text-uppercase fw-bold">Tổng Số Lượng Tồn Kho</div>
+            <div class="fs-3 fw-bold text-success">@ViewBag.TongSoLuongTon.ToString("N0")</div>
+            <div class="small text-muted">Chiếc sản phẩm trong kho</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filter -->
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input name="q" value="@ViewBag.Q" class="form-control" placeholder="Tìm theo mã SKU, tên sản phẩm..." />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-check pt-2">
+                <input class="form-check-input" type="checkbox" name="sapHet" value="true" id="chkSapHet" @(sapHet ? "checked" : "") onchange="this.form.submit()">
+                <label class="form-check-label fw-bold text-danger" for="chkSapHet">
+                    Chỉ hiển thị hàng sắp hết / hết
+                </label>
+            </div>
+        </div>
+        <div class="col-md-3 d-flex gap-1">
+            <button class="btn btn-secondary w-100"><i class="bi bi-filter"></i> Lọc</button>
+            <a asp-action="Index" class="btn btn-outline-secondary" title="Đặt lại"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Inventory Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 18%">Mã SKU</th>
+                    <th>Tên Sản Phẩm</th>
+                    <th class="text-center" style="width: 12%">Size / Màu</th>
+                    <th class="text-end" style="width: 14%">Giá Bán</th>
+                    <th class="text-center" style="width: 12%">Tồn Hiện Tại</th>
+                    <th class="text-center" style="width: 10%">Ngưỡng</th>
+                    <th class="text-center" style="width: 14%">Trạng Thái Tồn</th>
+                    <th class="text-end" style="width: 16%">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model)
+                {
+                    bool isOut = b.TonKho == 0;
+                    bool isLow = b.TonKho <= b.NguongCanhBao;
+                    string rowClass = isOut ? "table-danger" : (isLow ? "table-warning" : "");
+
+                    <tr class="@rowClass">
+                        <td class="font-monospace fw-bold text-primary">@b.MaSku</td>
+                        <td>
+                            <div class="fw-bold">@b.SanPham.TenSp</div>
+                            <small class="text-muted">Mã SP: @b.SanPham.MaSp &bull; Barcode: @b.MaVach</small>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border">@b.Size</span>
+                            <span class="badge bg-light text-dark border">@b.MauSac</span>
+                        </td>
+                        <td class="text-end fw-bold">@b.SanPham.GiaBan.ToString("N0") đ</td>
+                        <td class="text-center">
+                            <span class="fs-5 fw-bold @(isOut ? "text-danger" : (isLow ? "text-warning" : "text-success"))">
+                                @b.TonKho
+                            </span>
+                        </td>
+                        <td class="text-center text-muted font-monospace">@b.NguongCanhBao</td>
+                        <td class="text-center">
+                            @if (isOut)
+                            {
+                                <span class="badge bg-danger"><i class="bi bi-slash-circle me-1"></i>Hết Hàng</span>
+                            }
+                            else if (isLow)
+                            {
+                                <span class="badge bg-warning text-dark"><i class="bi bi-exclamation-triangle me-1"></i>Sắp Hết</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>An Toàn</span>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary" asp-action="Nhap" title="Nhập thêm">
+                                <i class="bi bi-plus-lg"></i> Nhập
+                            </a>
+                            <a class="btn btn-sm btn-outline-warning text-dark" asp-action="KiemKe" title="Kiểm kê">
+                                <i class="bi bi-pencil-square"></i> Kiểm kê
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted small d-flex justify-content-between">
+        <div>Hiển thị <strong>@Model.Count</strong> SKU biến thể.</div>
+        <div>Cơ chế khóa lạc quan (RowVersion) bảo vệ dữ liệu khi nhiều thủ kho thao tác cùng lúc.</div>
+    </div>
+</div>

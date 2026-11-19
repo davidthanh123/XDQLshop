@@ -1,0 +1,104 @@
+@model DonHangCreateVm
+@{
+    ViewData["Title"] = "Tạo Đơn Hàng Mới";
+    var skuList = (List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Sku;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <div>
+                    <h3 class="fw-bold mb-0 text-primary"><i class="bi bi-cart-plus me-2"></i>Tạo Đơn Hàng Mới</h3>
+                    <small class="text-muted">Hệ thống áp dụng cơ chế <strong>Trừ kho tức thời (Atomic Transaction)</strong> và chặn bán vượt tồn.</small>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+            </div>
+
+            @if (ViewBag.Loi != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>Lỗi tạo đơn:</strong> @ViewBag.Loi
+                </div>
+            }
+
+            <form method="post">
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-person-lines-fill me-1"></i> 1. Thông Tin Khách Hàng & Kênh Bán</h5>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Kênh bán hàng <span class="text-danger">*</span></label>
+                        <select asp-for="Kenh" class="form-select" asp-items="Html.GetEnumSelectList<KenhBan>()"></select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Họ tên khách hàng <span class="text-danger">*</span></label>
+                        <input asp-for="HoTen" class="form-control" placeholder="Ví dụ: Nguyễn Thị Hoa" required />
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Số điện thoại <span class="text-danger">*</span></label>
+                        <input asp-for="SoDienThoai" class="form-control" placeholder="Ví dụ: 0912345678" required />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Địa chỉ giao hàng chi tiết</label>
+                        <input asp-for="DiaChi" class="form-control" placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/TP" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Đơn vị vận chuyển</label>
+                        <select asp-for="DonViVanChuyen" class="form-select">
+                            <option value="Giao Hàng Tiết Kiệm (GHTK)">Giao Hàng Tiết Kiệm (GHTK)</option>
+                            <option value="Giao Hàng Nhanh (GHN)">Giao Hàng Nhanh (GHN)</option>
+                            <option value="Viettel Post">Viettel Post</option>
+                            <option value="J&T Express">J&T Express</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label fw-bold">Ghi chú giao hàng</label>
+                        <input asp-for="GhiChu" class="form-control" value="Cho xem hàng, không thử" />
+                    </div>
+                </div>
+
+                <h5 class="fw-bold text-dark mb-3"><i class="bi bi-box-seam me-1"></i> 2. Chọn Mặt Hàng Đặt Mua (Tối đa 5 dòng)</h5>
+                <div class="table-responsive mb-4">
+                    <table class="table table-bordered align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 5%">#</th>
+                                <th style="width: 75%">Chọn Biến Thể Sản Phẩm (Mã SKU - Tên - Số tồn hiện tại - Giá)</th>
+                                <th style="width: 20%" class="text-center">Số Lượng Đặt</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                <tr>
+                                    <td class="text-center font-monospace">@(i + 1)</td>
+                                    <td>
+                                        <select name="Dong[@i].BienTheId" class="form-select select-sku">
+                                            <option value="0">-- Chọn mã SKU / Sản phẩm --</option>
+                                            @foreach (var s in skuList)
+                                            {
+                                                <option value="@s.Value">@s.Text</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input name="Dong[@i].SoLuong" type="number" min="0" value="@(i == 0 ? "1" : "0")" class="form-control text-center fw-bold" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <div class="text-muted small">
+                        <i class="bi bi-shield-check text-success me-1"></i>
+                        Hệ thống kiểm tra số tồn kho thực tế và khóa giao dịch, ngăn chặn race-condition và tình trạng bán lố hàng.
+                    </div>
+                    <button type="submit" class="btn btn-primary px-4 py-2 fw-bold">
+                        <i class="bi bi-check-circle-fill me-1"></i> Xác Nhận Tạo Đơn (Trừ Kho Ngay)
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

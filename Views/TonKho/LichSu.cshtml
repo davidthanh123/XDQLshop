@@ -1,0 +1,98 @@
+@model List<LichSuKho>
+@{
+    ViewData["Title"] = "Lịch sử biến động kho";
+    var loai = ViewBag.Loai as LoaiKho?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold"><i class="bi bi-clock-history me-2"></i>Lịch Sử Biến Động Kho (Audit Trail)</h3>
+        <small class="text-muted">Ghi vết toàn bộ thao tác Xuất bán, Nhập kho, Hoàn hàng và Điều chỉnh kiểm kê</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Quay lại kho</a>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <select name="loai" class="form-select" asp-items="Html.GetEnumSelectList<LoaiKho>()" onchange="this.form.submit()">
+                <option value="">-- Tất cả loại biến động kho --</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <a asp-action="LichSu" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-counterclockwise me-1"></i> Đặt lại</a>
+        </div>
+    </form>
+</div>
+
+<!-- History Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 15%">Thời Gian</th>
+                    <th style="width: 20%">Mã SKU</th>
+                    <th>Tên Sản Phẩm / Biến Thể</th>
+                    <th class="text-center" style="width: 12%">Loại Thao Tác</th>
+                    <th class="text-center" style="width: 12%">Biến Động (SL)</th>
+                    <th>Nội Dung / Ghi Chú</th>
+                    <th style="width: 15%">Người Thực Hiện</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-muted">Chưa có bản ghi lịch sử kho nào.</td>
+                    </tr>
+                }
+                @foreach (var l in Model)
+                {
+                    string loaiBadge = l.Loai switch
+                    {
+                        LoaiKho.Nhap => "bg-success",
+                        LoaiKho.Xuat => "bg-danger",
+                        LoaiKho.Hoan => "bg-info text-dark",
+                        LoaiKho.KiemKe => "bg-warning text-dark",
+                        _ => "bg-secondary"
+                    };
+
+                    string sign = l.Loai switch
+                    {
+                        LoaiKho.Nhap or LoaiKho.Hoan => "+",
+                        LoaiKho.Xuat => "-",
+                        _ => (l.SoLuong >= 0 ? "+" : "")
+                    };
+
+                    string qtyColor = (l.Loai == LoaiKho.Xuat || (l.Loai == LoaiKho.KiemKe && l.SoLuong < 0)) ? "text-danger" : "text-success";
+
+                    <tr>
+                        <td class="small">@l.NgayTao.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                        <td class="font-monospace fw-bold text-primary">@l.BienThe.MaSku</td>
+                        <td>
+                            @l.BienThe.SanPham.TenSp
+                            <span class="badge bg-light text-dark border ms-1">@l.BienThe.Size / @l.BienThe.MauSac</span>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge @loaiBadge">@l.Loai</span>
+                        </td>
+                        <td class="text-center fw-bold fs-6 @qtyColor">
+                            @(l.Loai == LoaiKho.KiemKe ? (l.SoLuong >= 0 ? $"+{l.SoLuong}" : l.SoLuong.ToString()) : $"{sign}{l.SoLuong}")
+                        </td>
+                        <td class="small text-muted">@l.GhiChu</td>
+                        <td class="small">
+                            <i class="bi bi-person me-1"></i><strong>@l.NguoiThucHien</strong>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted small">
+        Hiển thị <strong>@Model.Count</strong> giao dịch biến động gần nhất. Mọi biến động đều được lưu vết thời gian thực.
+    </div>
+</div>

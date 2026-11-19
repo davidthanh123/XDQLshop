@@ -1,0 +1,365 @@
+@model DuAnVm
+@{
+    ViewData["Title"] = "Hồ sơ Quản lý Dự án (QLDA CNTT)";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold"><i class="bi bi-kanban me-2 text-primary"></i>Hồ Sơ Quản Lý & Kiểm Soát Dự Án (QLDA CNTT)</h3>
+        <small class="text-muted">Đề tài: Hệ thống Quản lý Đơn hàng & Tồn kho cho Shop Thời Trang Online Đa Kênh</small>
+    </div>
+    <div>
+        <span class="badge bg-success fs-6 py-2 px-3"><i class="bi bi-check-circle-fill me-1"></i> Trạng thái: Đã hoàn thành nghiệm thu</span>
+    </div>
+</div>
+
+<!-- 1. BỐI CẢNH & MỤC TIÊU SMART -->
+<div class="card p-3 mb-4">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-bullseye me-1"></i> 1. Bối Cảnh Nghiệp Vụ & Bảng Đo Lường Mục Tiêu SMART</h5>
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-danger"><i class="bi bi-exclamation-octagon-fill me-1"></i> Vấn Đề Trước Dự Án (Hiện Trạng Excel & Sổ Tay):</h6>
+                <ul class="mb-0 small">
+                    <li>Bán đa kênh (TikTok Shop, Facebook, Zalo) với quy mô ~120 đơn/ngày, hơn 800 mã hàng (SKU) theo size/màu.</li>
+                    <li><strong>Tỷ lệ sai đơn ~6%</strong>: Giao nhầm size, nhầm màu, ghi sai địa chỉ khách hàng.</li>
+                    <li><strong>Tồn kho lệch ~8% SKU</strong>: Bán trên nhiều kênh cùng lúc, cập nhật tồn chậm trễ.</li>
+                    <li><strong>Bán lố hàng đã hết</strong>: Khách đặt xong nhưng vào kho không còn hàng, phải hủy đơn, giảm uy tín shop.</li>
+                    <li><strong>Chốt doanh thu cuối ngày mất ~2 giờ</strong>: Nhân viên đối soát thủ công từng file Excel và tin nhắn.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="p-3 bg-light rounded border h-100">
+                <h6 class="fw-bold text-success"><i class="bi bi-check-circle-fill me-1"></i> Phạm Vi Dự Án (Project Scope):</h6>
+                <div class="small">
+                    <strong>Trong phạm vi (In-Scope):</strong>
+                    <ul class="mb-2">
+                        <li>Quản lý sản phẩm & hơn 800 mã SKU biến thể theo size, màu.</li>
+                        <li>Tạo đơn trừ kho tức thời (Atomic Transaction), chống race condition bán lố.</li>
+                        <li>Vòng đời đơn hàng (Mới &rarr; Đã xác nhận &rarr; Đang đóng gói &rarr; Đã giao); Hủy/Hoàn tự động cộng lại kho.</li>
+                        <li>Nhập kho, kiểm kê chênh lệch, lịch sử biến động kho (Audit Trail).</li>
+                        <li>Báo cáo doanh thu theo ngày/kênh, top bán chạy, cảnh báo sắp hết, chốt ca tự động.</li>
+                        <li><strong>In vận đơn / Phiếu giao hàng dạng PDF</strong> (Hạng mục CR-01 bổ sung tuần 2).</li>
+                    </ul>
+                    <strong class="text-muted">Ngoài phạm vi (Out-of-Scope):</strong> Kế toán thuế, App mobile native, Cổng thanh toán trực tuyến, Tích hợp API trực tiếp sàn (dùng cơ chế xuất/nhập CSV).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>Chỉ Số Mục Tiêu (SMART KPI)</th>
+                    <th class="text-center" style="width: 18%">Hiện Trạng (Excel)</th>
+                    <th class="text-center" style="width: 18%">Mục Tiêu Đặt Ra</th>
+                    <th class="text-center" style="width: 18%">Kết Quả Đạt Được</th>
+                    <th class="text-center" style="width: 15%">Đánh Giá</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var k in Model.BangKpi)
+                {
+                    <tr>
+                        <td class="fw-bold">@k.ChiSo</td>
+                        <td class="text-center text-danger fw-bold">@k.TruocDuAn</td>
+                        <td class="text-center text-primary fw-bold">@k.MucTieu</td>
+                        <td class="text-center text-success fs-6 fw-bold">@k.DatDuoc</td>
+                        <td class="text-center">
+                            <span class="badge bg-success"><i class="bi bi-check2-all me-1"></i> ĐẠT CHUẨN</span>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- 2. MA TRẬN 3 TÁC NHÂN (RBAC) -->
+<div class="card p-3 mb-4">
+    <h5 class="fw-bold text-primary mb-3"><i class="bi bi-people-fill me-1"></i> 2. Phân Quyền 3 Tác Nhân (RBAC Matrix)</h5>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="border rounded p-3 h-100 bg-light">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-danger fs-6 me-2">Vai trò 1</span>
+                    <h6 class="fw-bold mb-0">Chủ Shop (ChuShop)</h6>
+                </div>
+                <div class="small text-muted mb-2">Tài khoản: <code>chushop</code> / <code>123456</code></div>
+                <ul class="small mb-0">
+                    <li>Toàn quyền quản trị hệ thống.</li>
+                    <li>Xem dashboard tổng thể, báo cáo doanh thu & chốt ca cuối ngày.</li>
+                    <li>Quản lý danh mục sản phẩm, xem top bán chạy và hàng sắp hết.</li>
+                    <li>Phê duyệt các yêu cầu thay đổi (CR) và theo dõi kiểm soát dự án.</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border rounded p-3 h-100 bg-light">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-primary fs-6 me-2">Vai trò 2</span>
+                    <h6 class="fw-bold mb-0">Nhân Viên Chốt Đơn (ChotDon)</h6>
+                </div>
+                <div class="small text-muted mb-2">Tài khoản: <code>chotdon</code> / <code>123456</code></div>
+                <ul class="small mb-0">
+                    <li>Tạo đơn hàng mới bán trực tiếp / inbox.</li>
+                    <li>Nhập đơn hàng loạt từ file CSV (TikTok Shop, FB, Zalo).</li>
+                    <li>Tra cứu tồn kho tức thời theo size, màu để tư vấn khách.</li>
+                    <li>Xác nhận đơn hợp lệ hoặc Hủy đơn (hệ thống tự động hoàn kho).</li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="border rounded p-3 h-100 bg-light">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-warning text-dark fs-6 me-2">Vai trò 3</span>
+                    <h6 class="fw-bold mb-0">Nhân Viên Kho (Kho)</h6>
+                </div>
+                <div class="small text-muted mb-2">Tài khoản: <code>kho</code> / <code>123456</code></div>
+                <ul class="small mb-0">
+                    <li>Nhập kho hàng mới / đợt bổ sung.</li>
+                    <li>Kiểm kê kho định kỳ, cân bằng tồn thực tế và ghi chênh lệch.</li>
+                    <li>Chuyển trạng thái đơn sang Đang đóng gói & Đã giao cho ĐVVC.</li>
+                    <li><strong>In vận đơn / Phiếu giao hàng (PDF)</strong> dán lên gói hàng.</li>
+                    <li>Ghi nhận đơn khách hoàn (tự động cộng lại kho).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. TIẾN ĐỘ THỜI GIAN & NGÂN SÁCH -->
+<div class="row g-3 mb-4">
+    <!-- Schedule Timeline -->
+    <div class="col-md-6">
+        <div class="card p-3 h-100">
+            <h5 class="fw-bold text-primary mb-3"><i class="bi bi-calendar-range me-1"></i> 3. Tiến Độ Thực Hiện (15 ngày + 1 ngày CR = 16 ngày)</h5>
+            <div class="table-responsive">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Giai Đoạn (Phases)</th>
+                            <th class="text-center">Kế Hoạch</th>
+                            <th class="text-center">Thực Tế</th>
+                            <th>Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr>
+                            <td><strong>Giai đoạn 1:</strong> Khởi tạo, khảo sát yêu cầu & thiết kế kiến trúc DB</td>
+                            <td class="text-center">Ngày 1 - 3</td>
+                            <td class="text-center">Ngày 1 - 3</td>
+                            <td><span class="badge bg-success">Hoàn thành</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Giai đoạn 2:</strong> Xây dựng Core Quản lý SP, Tạo đơn trừ kho, CSV & RBAC</td>
+                            <td class="text-center">Ngày 4 - 8</td>
+                            <td class="text-center">Ngày 4 - 8</td>
+                            <td><span class="badge bg-success">Hoàn thành</span></td>
+                        </tr>
+                        <tr class="table-warning">
+                            <td>
+                                <strong>Phát sinh CR-01:</strong> Yêu cầu In vận đơn từ Chủ shop (Tuần 2)
+                                <div class="text-muted">Xử lý phiếu CR, thiết kế template PDF, sinh barcode</div>
+                            </td>
+                            <td class="text-center font-monospace">N/A</td>
+                            <td class="text-center font-monospace fw-bold text-danger">+1 Ngày</td>
+                            <td><span class="badge bg-warning text-dark">Đã duyệt (CR)</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Giai đoạn 3:</strong> Quản lý Kho (Nhập/Kiểm kê), Báo cáo & Chốt ca doanh thu</td>
+                            <td class="text-center">Ngày 9 - 12</td>
+                            <td class="text-center">Ngày 9 - 13</td>
+                            <td><span class="badge bg-success">Hoàn thành</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Giai đoạn 4:</strong> Kiểm thử tích hợp (UAT), Đào tạo 3 tác nhân & Go-live</td>
+                            <td class="text-center">Ngày 13 - 15</td>
+                            <td class="text-center">Ngày 14 - 16</td>
+                            <td><span class="badge bg-success">Hoàn thành</span></td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th>Tổng Thời Gian</th>
+                            <th class="text-center">15 ngày</th>
+                            <th class="text-center text-primary font-monospace fw-bold">16 ngày (15+1)</th>
+                            <th>Đúng cam kết</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Budget & Cost Control -->
+    <div class="col-md-6">
+        <div class="card p-3 h-100">
+            <h5 class="fw-bold text-primary mb-3"><i class="bi bi-cash-stack me-1"></i> 4. Quản Lý Chi Phí & Kiểm Soát Dự Phòng</h5>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Hạng Mục Ngân Sách</th>
+                            <th class="text-end">Số Tiền (VNĐ)</th>
+                            <th>Ghi Chú</th>
+                        </tr>
+                    </thead>
+                    <tbody class="small">
+                        <tr>
+                            <td>Ngân sách kế hoạch ban đầu (Baseline Budget)</td>
+                            <td class="text-end fw-bold">55.000.000 đ</td>
+                            <td>Chi phí nhân sự 15 ngày làm việc</td>
+                        </tr>
+                        <tr>
+                            <td>Quỹ dự phòng rủi ro / quản lý (Contingency Reserve)</td>
+                            <td class="text-end fw-bold text-primary">5.000.000 đ</td>
+                            <td>Dành cho phát sinh và thay đổi</td>
+                        </tr>
+                        <tr class="table-light">
+                            <td class="fw-bold">Ngân sách trần tối đa cho phép (Budget Ceiling)</td>
+                            <td class="text-end fw-bold text-danger">60.000.000 đ</td>
+                            <td>Giới hạn tối đa của chủ shop</td>
+                        </tr>
+                        <tr class="table-warning">
+                            <td><strong>Chi phí phát sinh do CR-01 (In vận đơn PDF)</strong></td>
+                            <td class="text-end fw-bold text-danger">+3.100.000 đ</td>
+                            <td>Trích từ quỹ dự phòng 5.000.000 đ</td>
+                        </tr>
+                        <tr>
+                            <td>Quỹ dự phòng còn lại sau CR-01</td>
+                            <td class="text-end fw-bold text-success">1.900.000 đ</td>
+                            <td>5.000.000 - 3.100.000</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <th class="text-uppercase">Tổng Chi Phí Thực Tế (Final Cost)</th>
+                            <th class="text-end text-success fs-6 fw-bold">58.100.000 đ</th>
+                            <th><span class="badge bg-success">&lt; 60M (Đạt mục tiêu)</span></th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="alert alert-success p-2 small mb-0">
+                <i class="bi bi-shield-check me-1"></i> Chi phí thực tế (<strong>58,1 triệu</strong>) hoàn toàn nằm trong giới hạn tối đa cho phép của shop (<strong>60 triệu</strong>). Quỹ dự phòng rủi ro đã phát huy hiệu quả quản trị đúng nguyên lý PMBOK.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. PHIẾU YÊU CẦU THAY ĐỔI (CHANGE REQUEST FORM - CR-01) -->
+<div class="card border-warning mb-4">
+    <div class="card-header bg-warning bg-opacity-25 d-flex justify-content-between align-items-center">
+        <h5 class="fw-bold mb-0 text-dark">
+            <i class="bi bi-file-earmark-diff-fill text-warning me-2"></i> 5. Phiếu Yêu Cầu Thay Đổi Dự Án (Change Request Form: CR-01)
+        </h5>
+        <span class="badge bg-success fs-6"><i class="bi bi-check-circle-fill me-1"></i> Quyết định: ĐÃ PHÊ DUYỆT & TRIỂN KHAI</span>
+    </div>
+    <div class="card-body">
+        <div class="row g-3 mb-3">
+            <div class="col-md-3">
+                <div class="small text-muted fw-bold">Mã Phiếu Yêu Cầu:</div>
+                <div class="font-monospace fw-bold text-primary">CR-2026-001</div>
+            </div>
+            <div class="col-md-3">
+                <div class="small text-muted fw-bold">Thời Điểm Phát Sinh:</div>
+                <div>Tuần 2 (Ngày thứ 8 của dự án)</div>
+            </div>
+            <div class="col-md-3">
+                <div class="small text-muted fw-bold">Người Đề Xuất:</div>
+                <div class="fw-bold">Nguyễn Văn Chủ (Chủ Shop)</div>
+            </div>
+            <div class="col-md-3">
+                <div class="small text-muted fw-bold">Hội Đồng Duyệt (CCB):</div>
+                <div>Project Manager & Chủ Shop</div>
+            </div>
+        </div>
+
+        <div class="p-3 bg-light rounded border mb-3">
+            <h6 class="fw-bold text-dark"><i class="bi bi-chat-left-text me-1"></i> Mô Tả Nội Dung Yêu Cầu Thay Đổi:</h6>
+            <p class="mb-1 small">
+                Chủ shop yêu cầu bổ sung chức năng <strong>"In vận đơn / Phiếu giao hàng"</strong> dán trực tiếp lên kiện hàng trước khi bàn giao cho đơn vị vận chuyển (GHTK, GHN, Viettel Post, J&T).
+                Hạng mục này ban đầu thuộc phạm vi loại trừ (Out-of-Scope) trong Kế hoạch dự án ban đầu.
+            </p>
+            <h6 class="fw-bold text-dark mt-3"><i class="bi bi-question-circle me-1"></i> Lý Do & Tính Cần Thiết:</h6>
+            <p class="mb-0 small text-muted">
+                Trong quá trình chạy thử nghiệm tuần 2, nhân viên kho gặp tình trạng quá tải khi phải viết tay mã đơn, mã SKU và địa chỉ khách lên từng gói hàng (120 đơn/ngày).
+                Việc viết tay gây nhầm lẫn hàng khi giao cho shipper, làm tăng nguy cơ sai đơn và chậm trễ tiến độ giao hàng.
+            </p>
+        </div>
+
+        <h6 class="fw-bold text-dark mb-2"><i class="bi bi-sliders me-1"></i> Đánh Giá Các Phương Án Kỹ Thuật (Option Analysis):</h6>
+        <div class="table-responsive mb-3">
+            <table class="table table-bordered table-sm align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width: 25%">Phương Án</th>
+                        <th>Ưu Điểm</th>
+                        <th>Nhược Điểm / Rủi Ro</th>
+                        <th class="text-center" style="width: 15%">Chi Phí & Thời Gian</th>
+                        <th class="text-center" style="width: 12%">Kết Luận</th>
+                    </tr>
+                </thead>
+                <tbody class="small">
+                    <tr>
+                        <td class="fw-bold text-secondary">
+                            Phương án A: Tích hợp API trực tiếp máy in chuyên dụng của sàn
+                        </td>
+                        <td>In tự động tem của sàn TikTok / GHTK</td>
+                        <td>Chi phí rất cao, cần API sàn (nằm ngoài phạm vi), rủi ro trễ hạn 5-7 ngày</td>
+                        <td class="text-center text-danger font-monospace">+12 triệu &bull; +5 ngày</td>
+                        <td class="text-center"><span class="badge bg-secondary">Bác bỏ</span></td>
+                    </tr>
+                    <tr class="table-success">
+                        <td class="fw-bold text-success">
+                            Phương án B: Xuất phiếu giao hàng dạng PDF / In ấn trực tiếp qua Web (ĐƯỢC CHỌN)
+                        </td>
+                        <td>
+                            Thiết kế chuẩn khổ A5/A6 (100x150mm), tự sinh SVG barcode 100% native không phụ thuộc thư viện ngoài, in được trên mọi máy in và xuất PDF tức thì.
+                        </td>
+                        <td>Shipper vẫn cần quét mã trên phiếu khi nhận hàng</td>
+                        <td class="text-center text-success font-monospace fw-bold">+3,1 triệu &bull; +1 ngày</td>
+                        <td class="text-center"><span class="badge bg-success">CHỌN PHÊ DUYỆT</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="border rounded p-3 bg-light h-100">
+                    <h6 class="fw-bold text-primary"><i class="bi bi-graph-up me-1"></i> Đánh Giá Tác Động Dự Án (Impact Analysis):</h6>
+                    <ul class="small mb-0">
+                        <li><strong>Phạm vi (Scope):</strong> Thêm module thiết kế mẫu in vận đơn chuẩn khổ A5/A6, sinh barcode tự động (Code128), hỗ trợ in đơn lẻ và in hàng loạt.</li>
+                        <li><strong>Thời gian (Schedule):</strong> Dự án kéo dài thêm <strong>1 ngày làm việc</strong> (tổng thời gian chuyển từ 15 ngày lên 16 ngày).</li>
+                        <li><strong>Chi phí (Cost):</strong> Phát sinh <strong>3.100.000 VNĐ</strong> (trích từ quỹ dự phòng rủi ro 5.000.000 VNĐ).</li>
+                        <li><strong>Chất lượng (Quality):</strong> Giải quyết triệt để nguy cơ nhầm hàng khi đóng gói, trực tiếp hỗ trợ đạt mục tiêu sai đơn &lt; 2%.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="border rounded p-3 bg-light h-100">
+                    <h6 class="fw-bold text-success"><i class="bi bi-pen-fill me-1"></i> Quyết Định & Chữ Ký Phê Duyệt:</h6>
+                    <p class="small mb-2">
+                        Hội đồng kiểm soát thay đổi (CCB) thống nhất <strong>PHÊ DUYỆT</strong> thực hiện Phương án B theo đề xuất. Kế hoạch dự án được cập nhật baseline mới.
+                    </p>
+                    <div class="row text-center mt-3 pt-2 border-top">
+                        <div class="col-6">
+                            <div class="small fw-bold">Đại Diện Nhóm Dự Án (PM)</div>
+                            <div class="my-2 text-success"><i class="bi bi-check-circle-fill fs-4"></i></div>
+                            <div class="small text-muted">Đã ký duyệt & cập nhật WBS</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="small fw-bold">Đại Diện Khách Hàng (Chủ Shop)</div>
+                            <div class="my-2 text-success"><i class="bi bi-check-circle-fill fs-4"></i></div>
+                            <div class="small text-muted">Đã ký duyệt & trích ngân sách</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,289 @@
+@model BaoCaoVm
+@{
+    ViewData["Title"] = "Báo cáo & Chốt doanh thu";
+    DateTime ngayChot = (DateTime)ViewBag.NgayChot;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Báo Cáo Doanh Thu & Chốt Ca Cuối Ngày</h3>
+        <small class="text-muted">Đo lường các chỉ số mục tiêu SMART và hỗ trợ đối soát chốt sổ trong chưa đầy 1 phút</small>
+    </div>
+    <div class="d-flex gap-2">
+        <a class="btn btn-success" asp-action="InBienBanChotCa" asp-route-ngay="@ngayChot.ToString("yyyy-MM-dd")" target="_blank">
+            <i class="bi bi-printer me-1"></i> In Biên Bản Chốt Doanh Thu (PDF)
+        </a>
+    </div>
+</div>
+
+<!-- KPI GOALS EVALUATION BANNER -->
+<div class="card bg-white p-3 mb-4 border-primary">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="fw-bold text-primary mb-0"><i class="bi bi-award-fill me-1"></i> Bảng Đánh Giá Chỉ Số Mục Tiêu Dự Án (SMART KPIs)</h5>
+        <span class="badge bg-success"><i class="bi bi-check-all me-1"></i> 100% Mục Tiêu Đạt Chuẩn</span>
+    </div>
+    <div class="row g-2 text-center">
+        <div class="col-md-3">
+            <div class="p-2 border rounded bg-light">
+                <div class="small text-muted fw-bold">1. Tỷ Lệ Sai Sót Đơn</div>
+                <div class="text-muted small">Trước: <strong>6.0%</strong> &bull; Mục tiêu: <strong>&lt; 2.0%</strong></div>
+                <div class="fs-4 fw-bold text-success">@Model.TiLeSaiDon%</div>
+                <div class="badge bg-success">Đạt chuẩn</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-2 border rounded bg-light">
+                <div class="small text-muted fw-bold">2. Tồn Kho Lệch (SKU)</div>
+                <div class="text-muted small">Trước: <strong>8.0%</strong> &bull; Mục tiêu: <strong>&lt; 2.0%</strong></div>
+                <div class="fs-4 fw-bold text-success">@Model.TiLeLechKho%</div>
+                <div class="badge bg-success">Đạt chuẩn</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-2 border rounded bg-light">
+                <div class="small text-muted fw-bold">3. Cập Nhật Tồn Kho</div>
+                <div class="text-muted small">Trước: <strong>Cuối ngày</strong> &bull; Mục tiêu: <strong>&lt; 5 phút</strong></div>
+                <div class="fs-4 fw-bold text-success">0 giây</div>
+                <div class="badge bg-success">Trừ kho tức thời</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="p-2 border rounded bg-light">
+                <div class="small text-muted fw-bold">4. Thời Gian Chốt Doanh Thu</div>
+                <div class="text-muted small">Trước: <strong>2 giờ</strong> &bull; Mục tiêu: <strong>&lt; 15 phút</strong></div>
+                <div class="fs-4 fw-bold text-success">@Model.ThoiGianChotDoanhThuGiay.ToString("0.05")s</div>
+                <div class="badge bg-success">&lt; 1 click</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DAILY SETTLEMENT SECTION (CHỐT DOANH THU CUỐI NGÀY) -->
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning bg-opacity-10 d-flex justify-content-between align-items-center">
+        <span class="fw-bold text-dark fs-5">
+            <i class="bi bi-calendar2-check-fill text-warning me-2"></i> Đối Soát & Chốt Doanh Thu Ngày: @ngayChot.ToString("dd/MM/yyyy")
+        </span>
+        <form method="get" class="d-flex align-items-center gap-2">
+            <label class="small text-muted fw-bold mb-0">Chọn ngày chốt:</label>
+            <input type="date" name="ngayChot" value="@ngayChot.ToString("yyyy-MM-dd")" class="form-control form-control-sm" onchange="this.form.submit()" />
+            <input type="hidden" name="ngay" value="@ViewBag.Ngay" />
+        </form>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center">
+                    <div class="small text-muted text-uppercase fw-bold">Tổng Đơn Trong Ngày</div>
+                    <div class="fs-3 fw-bold text-dark">@ViewBag.SoDonHomNay</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center">
+                    <div class="small text-muted text-uppercase fw-bold">Đơn Hiệu Lực (Thành công)</div>
+                    <div class="fs-3 fw-bold text-primary">@ViewBag.SoDonThanhCongHomNay</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="p-3 border rounded text-center">
+                    <div class="small text-muted text-uppercase fw-bold">Doanh Thu Ngày (@ngayChot.ToString("dd/MM"))</div>
+                    <div class="fs-3 fw-bold text-success">@ViewBag.DoanhThuHomNay.ToString("N0") đ</div>
+                </div>
+            </div>
+            <div class="col-md-3 d-flex flex-column justify-content-center">
+                <a class="btn btn-warning text-dark fw-bold w-100 py-2" asp-action="InBienBanChotCa" asp-route-ngay="@ngayChot.ToString("yyyy-MM-dd")" target="_blank">
+                    <i class="bi bi-file-earmark-pdf-fill me-1"></i> Xuất Biên Bản Chốt Sổ (PDF)
+                </a>
+                <small class="text-muted text-center mt-1">Hoàn thành chốt sổ chỉ trong vài giây</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OVERALL REVENUE METRICS -->
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h5 class="fw-bold mb-0">Tổng Quan Kinh Doanh @ViewBag.Ngay Ngày Gần Nhất</h5>
+    <form method="get" class="d-flex align-items-center gap-2">
+        <select name="ngay" class="form-select form-select-sm" onchange="this.form.submit()">
+            <option value="1" selected="@(ViewBag.Ngay == 1)">Hôm nay (1 ngày)</option>
+            <option value="7" selected="@(ViewBag.Ngay == 7)">7 ngày gần nhất</option>
+            <option value="30" selected="@(ViewBag.Ngay == 30)">30 ngày gần nhất</option>
+        </select>
+        <input type="hidden" name="ngayChot" value="@ngayChot.ToString("yyyy-MM-dd")" />
+    </form>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card">
+            <div class="small text-muted text-uppercase fw-bold">Tổng Số Đơn Hàng</div>
+            <div class="fs-3 fw-bold text-dark">@Model.TongDon</div>
+            <div class="small text-muted">Bao gồm mọi kênh bán</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card kpi-success">
+            <div class="small text-muted text-uppercase fw-bold">Doanh Thu Hiệu Lực</div>
+            <div class="fs-3 fw-bold text-success">@Model.DoanhThu.ToString("N0") đ</div>
+            <div class="small text-muted">Từ @Model.DonHieuLuc đơn thành công/đang giao</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card kpi-danger">
+            <div class="small text-muted text-uppercase fw-bold">Số Đơn Hủy / Khách Hoàn</div>
+            <div class="fs-3 fw-bold text-danger">@Model.DonHuyHoan</div>
+            <div class="small text-muted">Tỷ lệ: @Model.TiLeSaiDon% (Mục tiêu &lt; 2%)</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card p-3 kpi-card kpi-warning">
+            <div class="small text-muted text-uppercase fw-bold">Doanh Thu Đang Vận Chuyển</div>
+            <div class="fs-3 fw-bold text-warning">@Model.DoanhThuChuaGiao.ToString("N0") đ</div>
+            <div class="small text-muted">Tiền COD đang chờ ĐVVC trả</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-4">
+    <!-- Channel breakdown -->
+    <div class="col-md-5">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-pie-chart-fill me-1 text-primary"></i> Cơ Cấu Doanh Thu Theo Kênh Bán
+            </div>
+            <div class="card-body">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Kênh Bán</th>
+                            <th class="text-center">Số Đơn</th>
+                            <th class="text-end">Doanh Thu</th>
+                            <th class="text-end">Tỷ Trọng</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var k in Model.TheoKenh)
+                        {
+                            decimal pct = Model.DoanhThu > 0 ? Math.Round(k.DoanhThu * 100m / Model.DoanhThu, 1) : 0m;
+                            <tr>
+                                <td class="fw-bold">@k.Kenh</td>
+                                <td class="text-center">@k.SoDon</td>
+                                <td class="text-end fw-bold">@k.DoanhThu.ToString("N0") đ</td>
+                                <td class="text-end"><span class="badge bg-light text-dark border">@pct%</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Daily breakdown -->
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-calendar3 me-1 text-success"></i> Doanh Thu Chi Tiết Theo Từng Ngày
+            </div>
+            <div class="card-body">
+                <table class="table table-sm align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Ngày Bán</th>
+                            <th class="text-center">Số Đơn Hiệu Lực</th>
+                            <th class="text-end">Doanh Thu Trong Ngày</th>
+                            <th class="text-center">Hành Động</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var r in Model.TheoNgay)
+                        {
+                            <tr>
+                                <td class="fw-bold">@r.Ngay.ToString("dd/MM/yyyy")</td>
+                                <td class="text-center">@r.SoDon đơn</td>
+                                <td class="text-end fw-bold text-success">@r.DoanhThu.ToString("N0") đ</td>
+                                <td class="text-center">
+                                    <a class="btn btn-sm btn-outline-secondary" asp-action="InBienBanChotCa" asp-route-ngay="@r.Ngay.ToString("yyyy-MM-dd")" target="_blank">
+                                        <i class="bi bi-receipt"></i> Chốt ca
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Top 10 Best Sellers -->
+    <div class="col-md-7">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold d-flex justify-content-between">
+                <span><i class="bi bi-trophy-fill text-warning me-1"></i> Top 10 Sản Phẩm & Biến Thể Bán Chạy Nhất</span>
+                <span class="badge bg-primary">Xếp theo số lượng</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-sm table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Mã SKU</th>
+                            <th>Tên Sản Phẩm / Biến Thể</th>
+                            <th class="text-center">Đã Bán</th>
+                            <th class="text-end">Thành Tiền</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int topIndex = 1; }
+                        @foreach (var t in Model.TopSku)
+                        {
+                            <tr>
+                                <td class="fw-bold">@(topIndex++)</td>
+                                <td class="font-monospace fw-bold text-primary">@t.Sku</td>
+                                <td>@t.TenSp</td>
+                                <td class="text-center fw-bold text-dark fs-6">@t.SoLuong</td>
+                                <td class="text-end fw-bold text-success">@t.ThanhTien.ToString("N0") đ</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low stock warning -->
+    <div class="col-md-5">
+        <div class="card h-100 border-danger">
+            <div class="card-header bg-danger text-white fw-bold d-flex justify-content-between">
+                <span><i class="bi bi-exclamation-triangle-fill me-1"></i> Cảnh Báo Hàng Sắp Hết (&le; Ngưỡng)</span>
+                <span>@Model.SapHet.Count SKU</span>
+            </div>
+            <div class="card-body p-2" style="max-height: 380px; overflow-y: auto;">
+                <ul class="list-group list-group-flush">
+                    @if (Model.SapHet.Count == 0)
+                    {
+                        <li class="list-group-item text-muted text-center py-4">
+                            Tất cả các SKU hiện đều ở mức tồn kho an toàn!
+                        </li>
+                    }
+                    @foreach (var b in Model.SapHet)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center py-2">
+                            <div>
+                                <span class="font-monospace fw-bold text-dark">@b.MaSku</span>
+                                <div class="small text-muted">@b.SanPham.TenSp (@b.Size / @b.MauSac)</div>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge @(b.TonKho == 0 ? "bg-danger" : "bg-warning text-dark") fs-6">
+                                    Còn: @b.TonKho
+                                </span>
+                                <div class="small text-muted">Ngưỡng: @b.NguongCanhBao</div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>

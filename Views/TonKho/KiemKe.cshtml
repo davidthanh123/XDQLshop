@@ -1,0 +1,51 @@
+@{
+    ViewData["Title"] = "Kiểm Kê Kho Định Kỳ";
+    var skuList = (List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>)ViewBag.Sku;
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card p-4">
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
+                <div>
+                    <h3 class="fw-bold mb-0 text-warning"><i class="bi bi-clipboard-check me-2"></i>Phiếu Kiểm Kê & Cân Bằng Kho</h3>
+                    <small class="text-muted">Đối soát số lượng đếm thực tế với dữ liệu hệ thống, tự động ghi nhận chênh lệch</small>
+                </div>
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left me-1"></i> Quay lại</a>
+            </div>
+
+            @if (ViewBag.Loi != null)
+            {
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> @ViewBag.Loi
+                </div>
+            }
+
+            <div class="alert alert-info small">
+                <i class="bi bi-info-circle me-1"></i>
+                Mục tiêu dự án: Giảm tỷ lệ lệch tồn kho từ <strong>8%</strong> xuống <strong>dưới 2%</strong> số SKU.
+                Mọi chênh lệch giữa thực tế và hệ thống sẽ được lưu vết vào lịch sử biến động kho để phục vụ kiểm toán và báo cáo chốt ca.
+            </div>
+
+            <form method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Chọn Mã SKU Biến Thể Cần Kiểm Kê <span class="text-danger">*</span></label>
+                    <select name="bienTheId" class="form-select form-select-lg" asp-items="skuList" required></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Số Lượng Thực Tế Kiểm Đếm Được Tại Kệ Kho <span class="text-danger">*</span></label>
+                    <input name="thucTe" type="number" min="0" class="form-control form-control-lg fw-bold" placeholder="Nhập số lượng đếm được..." required />
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Lý Do & Ghi Chú Chênh Lệch</label>
+                    <input name="ghiChu" class="form-control" placeholder="Ví dụ: Rơi vãi, hàng lỗi vải loại ra, nhầm size khi xếp kệ..." value="Kiểm kê định kỳ cuối tuần" />
+                </div>
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-warning text-dark px-4 py-2 fw-bold">
+                        <i class="bi bi-check2-all me-1"></i> Cập Nhật Theo Số Thực Tế & Ghi Chênh Lệch
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

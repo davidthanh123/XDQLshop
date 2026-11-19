@@ -1,0 +1,213 @@
+@model List<DonHang>
+@{
+    ViewData["Title"] = "Quản lý Đơn hàng";
+    var tt = ViewBag.Tt as TrangThaiDon?;
+    var kenh = ViewBag.Kenh as KenhBan?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-0 fw-bold"><i class="bi bi-receipt-cutoff me-2"></i>Danh Sách Đơn Hàng</h3>
+        <small class="text-muted">Quản lý quy trình xử lý đơn từ Mới &rarr; Xác nhận &rarr; Đóng gói &rarr; Đã giao</small>
+    </div>
+    <div class="d-flex gap-2">
+        @if (User.IsInRole(VaiTro.ChuShop) || User.IsInRole(VaiTro.ChotDon))
+        {
+            <a class="btn btn-primary" asp-action="Create">
+                <i class="bi bi-plus-lg me-1"></i> Tạo đơn mới
+            </a>
+            <a class="btn btn-outline-success" asp-action="ImportCsv">
+                <i class="bi bi-file-earmark-excel me-1"></i> Nhập CSV (TikTok/FB)
+            </a>
+        }
+        <button id="btnInHangLoat" class="btn btn-warning text-dark" onclick="inVanDonDaChon()" disabled>
+            <i class="bi bi-printer me-1"></i> In Vận Đơn Đã Chọn (<span id="demChon">0</span>)
+        </button>
+    </div>
+</div>
+
+<!-- Quick Status Cards -->
+<div class="row g-2 mb-3">
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-tt="Moi" class="card text-decoration-none text-dark p-2 kpi-card @(tt == TrangThaiDon.Moi ? "bg-light border-primary" : "")">
+            <div class="small text-muted">Chờ xác nhận (Mới)</div>
+            <div class="fs-4 fw-bold text-secondary">@ViewBag.DemMoi</div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-tt="DaXacNhan" class="card text-decoration-none text-dark p-2 kpi-card @(tt == TrangThaiDon.DaXacNhan ? "bg-light border-primary" : "")">
+            <div class="small text-muted">Đã xác nhận (Chờ kho đóng gói)</div>
+            <div class="fs-4 fw-bold text-primary">@ViewBag.DemDaXacNhan</div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-tt="DangDong" class="card text-decoration-none text-dark p-2 kpi-card @(tt == TrangThaiDon.DangDong ? "bg-light border-primary" : "")">
+            <div class="small text-muted">Đang đóng gói (Chờ gửi ĐVVC)</div>
+            <div class="fs-4 fw-bold text-warning">@ViewBag.DemDangDong</div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a asp-action="Index" asp-route-tt="DaGiao" class="card text-decoration-none text-dark p-2 kpi-card @(tt == TrangThaiDon.DaGiao ? "bg-light border-primary" : "")">
+            <div class="small text-muted">Đã giao cho ĐVVC / Hoàn tất</div>
+            <div class="fs-4 fw-bold text-success">@ViewBag.DemDaGiao</div>
+        </a>
+    </div>
+</div>
+
+<!-- Filter Bar -->
+<div class="card p-3 mb-3">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input name="q" value="@ViewBag.Q" class="form-control" placeholder="Tìm theo mã đơn, mã vận đơn, tên khách, SĐT..." />
+            </div>
+        </div>
+        <div class="col-md-3">
+            <select name="tt" class="form-select" asp-items="Html.GetEnumSelectList<TrangThaiDon>()">
+                <option value="">-- Mọi trạng thái đơn --</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="kenh" class="form-select" asp-items="Html.GetEnumSelectList<KenhBan>()">
+                <option value="">-- Mọi kênh bán hàng --</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-1">
+            <button class="btn btn-secondary w-100"><i class="bi bi-filter"></i> Lọc</button>
+            <a asp-action="Index" class="btn btn-outline-secondary" title="Xóa bộ lọc"><i class="bi bi-arrow-counterclockwise"></i></a>
+        </div>
+    </form>
+</div>
+
+<!-- Order List Table -->
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 40px" class="text-center">
+                        <input type="checkbox" id="chkAll" class="form-check-input" onchange="chonTatCa(this)" />
+                    </th>
+                    <th>Mã Đơn / Vận Đơn</th>
+                    <th>Kênh Bán</th>
+                    <th>Ngày Tạo</th>
+                    <th>Khách Hàng & Địa Chỉ</th>
+                    <th class="text-center">Số Mặt Hàng</th>
+                    <th class="text-end">Tổng Tiền (COD)</th>
+                    <th>Trạng Thái</th>
+                    <th class="text-end" style="min-width: 150px">Thao Tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9" class="text-center py-4 text-muted">
+                            <i class="bi bi-inbox fs-2 d-block mb-1"></i> Không có đơn hàng nào phù hợp với điều kiện tìm kiếm.
+                        </td>
+                    </tr>
+                }
+                @foreach (var d in Model)
+                {
+                    string badgeColor = d.TrangThai switch
+                    {
+                        TrangThaiDon.Moi => "bg-secondary",
+                        TrangThaiDon.DaXacNhan => "bg-primary",
+                        TrangThaiDon.DangDong => "bg-warning text-dark",
+                        TrangThaiDon.DaGiao => "bg-success",
+                        TrangThaiDon.Huy => "bg-danger",
+                        TrangThaiDon.Hoan => "bg-dark",
+                        _ => "bg-secondary"
+                    };
+
+                    string channelClass = d.Kenh switch
+                    {
+                        KenhBan.TikTokShop => "channel-tiktok",
+                        KenhBan.Facebook => "channel-fb",
+                        KenhBan.Zalo => "channel-zalo",
+                        _ => "channel-pos"
+                    };
+
+                    <tr>
+                        <td class="text-center">
+                            <input type="checkbox" class="form-check-input chk-don" value="@d.Id" onchange="capNhatSoChon()" />
+                        </td>
+                        <td>
+                            <div class="fw-bold font-monospace text-primary">@d.MaDon</div>
+                            @if (!string.IsNullOrWhiteSpace(d.MaVanDon))
+                            {
+                                <div class="small text-muted font-monospace"><i class="bi bi-truck me-1"></i>@d.MaVanDon</div>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge badge-channel @channelClass">
+                                @if (d.Kenh == KenhBan.TikTokShop) { <i class="bi bi-tiktok me-1"></i> }
+                                else if (d.Kenh == KenhBan.Facebook) { <i class="bi bi-facebook me-1"></i> }
+                                else if (d.Kenh == KenhBan.Zalo) { <i class="bi bi-chat-dots me-1"></i> }
+                                @d.Kenh
+                            </span>
+                        </td>
+                        <td class="small">@d.NgayTao.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td>
+                            <div class="fw-bold text-dark">@d.KhachHang.HoTen</div>
+                            <div class="small text-muted">
+                                <i class="bi bi-telephone me-1"></i>@d.KhachHang.SoDienThoai &bull; @d.KhachHang.DiaChi
+                            </div>
+                        </td>
+                        <td class="text-center">
+                            <span class="badge bg-light text-dark border">
+                                @d.ChiTiet.Sum(c => c.SoLuong) sp
+                            </span>
+                        </td>
+                        <td class="text-end">
+                            <div class="fw-bold text-danger">@d.TongTien.ToString("N0") đ</div>
+                            <div class="small text-muted">COD: @d.TienThuHo.ToString("N0") đ</div>
+                        </td>
+                        <td>
+                            <span class="badge @badgeColor">@d.TrangThai</span>
+                        </td>
+                        <td class="text-end">
+                            <a class="btn btn-sm btn-outline-primary me-1" asp-action="Details" asp-route-id="@d.Id" title="Chi tiết đơn">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a class="btn btn-sm btn-outline-success" asp-action="InVanDon" asp-route-id="@d.Id" target="_blank" title="In phiếu giao hàng (CR-01)">
+                                <i class="bi bi-printer"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="card-footer bg-white text-muted small d-flex justify-content-between">
+        <div>Hiển thị <strong>@Model.Count</strong> đơn hàng gần nhất.</div>
+        <div>Hệ thống tự động trừ kho ngay khi chốt và hoàn kho tức thì khi Hủy/Hoàn.</div>
+    </div>
+</div>
+
+<script>
+    function chonTatCa(master) {
+        var checkboxes = document.querySelectorAll('.chk-don');
+        checkboxes.forEach(function (cb) {
+            cb.checked = master.checked;
+        });
+        capNhatSoChon();
+    }
+
+    function capNhatSoChon() {
+        var selected = document.querySelectorAll('.chk-don:checked');
+        var count = selected.length;
+        document.getElementById('demChon').innerText = count;
+        var btn = document.getElementById('btnInHangLoat');
+        btn.disabled = count === 0;
+    }
+
+    function inVanDonDaChon() {
+        var selected = document.querySelectorAll('.chk-don:checked');
+        var ids = Array.from(selected).map(function (cb) { return cb.value; }).join(',');
+        if (ids) {
+            window.open('@Url.Action("InVanDonHangLoat", "DonHang")?ids=' + ids, '_blank');
+        }
+    }
+</script>
